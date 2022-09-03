@@ -11,11 +11,11 @@ exports.getForm=(req,res)=>{
 
 exports.updateForm=(req,res)=>{
     res.sendFile(path.join(__dirname + "/../views/update.html"))
-    //  const {id}=req.params
-    //  const found=userdata.find(data=>data.id===id)
-    //  if(found){
-    //     res.status(200).json(found)
-    //  }
+     const {id}=req.query
+     const found=userdata.find(data=>data.id===id)
+     if(found){
+        res.send(found)
+     }
     //  else{
     //     res.status(404).json({
     //         message:"not found"
@@ -24,6 +24,12 @@ exports.updateForm=(req,res)=>{
 }
 exports.deleteForm=(req,res)=>{
     res.sendFile(path.join(__dirname + "/../views/delete.html"))
+    const {id}=req.query
+     const found=userdata.find(data=>data.id===id)
+     if(found){
+        res.send(found)
+     }
+     
 }
 
 
@@ -96,9 +102,11 @@ exports.saveUser=(req,res)=>{
      fs.writeFile('users.json', newuserdata,(err)=>{
         if(err){
             res.send('not added')
+            res.end()
         }
         else{
             res.send(newuserdata)
+            res.end()
         }
     });
 
@@ -115,18 +123,11 @@ exports.saveUser=(req,res)=>{
         const stock = userdata.find(data => data.id === Number(id))
         
         if(stock){
-            stock.name = req.body.name;
-            stock.gender = req.body.gender;
-            stock.address = req.body.address;
-            stock.contact = req.body.contact;
-              console.log(stock)
-            fs.writeFile('users.json', JSON.stringify(stock), err => {
-                res.status(201).json({
-                    status: 'success',
-                    data: {
-                        data: stock
-                    }
-                })
+            const userData=req.body
+            userdata.push(userData)
+            const newuserdata= JSON.stringify(userdata) 
+            fs.writeFile('users.json', JSON.stringify(newuserdata), err => {
+                res.send(newuserdata)
         }) 
         }
         
@@ -136,6 +137,7 @@ exports.saveUser=(req,res)=>{
             status: "fail",
             message: "invalid ID"
         })
+       
         }
     }
 
