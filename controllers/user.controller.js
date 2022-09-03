@@ -1,22 +1,36 @@
 const fs = require('fs');
 const path=require("path")
 
-exports.getForm=(req,res)=>{
-    res.sendfile(path.join(_dirname + "../views/index.html"))
-}
-//Get a random user
 
+const rawdata = fs.readFileSync('users.json');
+const userdata= JSON.parse(rawdata)
+
+exports.getForm=(req,res)=>{
+    res.sendFile(path.join(__dirname + "/../views/submit.html"))
+}
+
+exports.updateForm=(req,res)=>{
+    res.sendFile(path.join(__dirname + "/../views/update.html"))
+    //  const {id}=req.params
+    //  const found=userdata.find(data=>data.id===id)
+    //  if(found){
+    //     res.status(200).json(found)
+    //  }
+    //  else{
+    //     res.status(404).json({
+    //         message:"not found"
+    //     })
+    //  }
+}
+exports.deleteForm=(req,res)=>{
+    res.sendFile(path.join(__dirname + "/../views/delete.html"))
+}
+
+
+
+//Get a random user
 exports.getUser=(req,res)=>{
     res.header("Content-Type",'application/json');
-
-    //for syncronus function
-    // rawdata = fs.readFileSync('users.json');
-     
-    // const userData=JSON.parse(rawdata)
-    // var keys = Object.keys(userData);
-    // const randomProperty = keys[Math.floor(keys.length*Math.random())]
-    // const userInf = userData[randomProperty]
-    // res.send(userInf)
 
     //for Asyncronus function
     fs.readFile('users.json',(err,rawdata)=>{
@@ -35,7 +49,6 @@ exports.getUser=(req,res)=>{
             res.end() 
         }
     })
-
 }
 
 
@@ -54,40 +67,100 @@ exports.getAllUsers=(req,res)=>{
             res.end() 
         }
     })
-
 }
 
-
-
-exports.saveUser=(res,req)=>{
+//POST method
+exports.saveUser=(req,res)=>{
     res.header("Content-Type",'application/json')
-    // const id=Number(req.body.id)
-    // const gender=req.body.gender
-    // const name=req.body.name
-    // const contact=Number(req.body.name)
-    // const address=req.body.address
-    // const photoUrl=req.body.photoUrl
-
-    // const user={
-    //     id,
-    //     gender,
-    //     name,
-    //     contact,
-    //     address,
-    //     photoUrl
-
-    // }
     
+
+    const id=req.body.id
+    const gender=req.body.gender
+    const name=req.body.name
+    const contact=Number(req.body.contact)
+    const address=req.body.address
+    const photoUrl=req.body.photoUrl
+
     const user={
-        id:7,
-        name:"amena"
-    }
-   const rawdata = fs.readFileSync('users.json');
-   const userdata= JSON.parse(rawdata)
-   userdata.push(user)
-   const newuserdata= JSON.stringify(userdata)
-
-
-    fs.writeFileSync('users.json', newuserdata);
+        id,
+        gender,
+        name,
+        contact,
+        address,
+        photoUrl
+     }
     
+     userdata.push(user)
+     const newuserdata= JSON.stringify(userdata)
+   
+     fs.writeFile('users.json', newuserdata,(err)=>{
+        if(err){
+            res.send('not added')
+        }
+        else{
+            res.send(newuserdata)
+        }
+    });
+
 }
+
+
+// patch/update  method
+
+    exports.updateUser=(req,res)=>{
+        res.header("Content-Type",'application/json')
+        
+         const {id}=req.params
+         const filter={_id:id}
+        const stock = userdata.find(data => data.id === Number(id))
+        
+        if(stock){
+            stock.name = req.body.name;
+            stock.gender = req.body.gender;
+            stock.address = req.body.address;
+            stock.contact = req.body.contact;
+              console.log(stock)
+            fs.writeFile('users.json', JSON.stringify(stock), err => {
+                res.status(201).json({
+                    status: 'success',
+                    data: {
+                        data: stock
+                    }
+                })
+        }) 
+        }
+        
+    
+    else  {
+        return res.status(404).json({
+            status: "fail",
+            message: "invalid ID"
+        })
+        }
+    }
+
+    //delete method
+    
+   exports.deleteUser=(req,res)=>{
+    res.header("Content-Type",'application/json')
+        
+    const {id}=req.params
+    const filter={_id:id}
+   const stock = userdata.find(data => data.id!== Number(id))
+   
+   if(stock){
+       
+       fs.writeFile('users.json', JSON.stringify(stock), err => {
+           res.send(stock)
+   }) 
+   }
+   
+
+else  {
+   return res.status(404).json({
+       status: "fail",
+       message: "invalid ID"
+   })
+   }
+   } 
+    
